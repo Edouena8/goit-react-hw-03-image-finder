@@ -48,7 +48,14 @@ class App extends Component {
   }
 
   handleFormSubmit = imageName => {
-    this.setState({ imageName });
+    this.setState({ 
+      imageName,
+      page: 1,
+      images: [],
+      loading: false,
+      totalHits: 0,
+      showBtn: false,
+    });
   }
 
   handleLoadMoreBtnClick = () => {
