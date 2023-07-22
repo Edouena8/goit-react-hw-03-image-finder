@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import { fetchImages } from "services/images-api";
-import { AppWrap } from "./App.styled";
 import Searchbar from "./Searchbar";
 import ImageGallery from "./ImageGallery";
 import Loader from "./Loader";
@@ -11,11 +10,13 @@ class App extends Component {
 
   state = {
     imageName: '',
-    page: 1,
     images: [],
-    loading: false,
+    page: 1,
     totalHits: 0,
+    perPage: 12,
+    loading: false,
     showBtn: false,
+    error: null,
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -23,26 +24,31 @@ class App extends Component {
     const nextName = this.state.imageName;
     const prevPage = prevState.page;
     const nextPage = this.state.page;
-    const {images} = this.state;
+    const { perPage } = this.state;
 
     if(prevName !== nextName || prevPage !== nextPage) {
 
       this.setState({ loading: true });
 
-      fetchImages(nextName, nextPage)
+      fetchImages(nextName, nextPage, perPage)
       .then(({hits, totalHits}) => {
         
         if(!hits.length) {
-          toast.error(`${nextName} not found`);
+          toast.error(`${nextName} not found. Please try again!`);
           return;
         }
-          this.setState({
-             images: [...images, ...hits],
-             showBtn: nextPage < Math.ceil(totalHits / 12),
-             loading: false
-          })
+
+        if (nextPage === Math.round(this.state.totalHits / perPage)) {
+            this.setState({showBtn: false})
+          }
+        
+          this.setState(({ images }) => ({
+            images: [...images, ...hits],
+            totalHits,
+            showBtn: true,
+          }));
       })
-      .catch(error => this.setState({ error }))
+      .catch(error => this.setState({ error, showBtn: false }))
       .finally(() => this.setState({ loading: false }));
     }
   }
@@ -50,32 +56,43 @@ class App extends Component {
   handleFormSubmit = imageName => {
     this.setState({ 
       imageName,
-      page: 1,
       images: [],
-      loading: false,
+      page: 1,
       totalHits: 0,
+      perPage: 12,
+      loading: false,
       showBtn: false,
+      error: null,
     });
   }
 
-  handleLoadMoreBtnClick = () => {
-    this.setState(({page}) => ({
-        page: page + 1,
-    }))
-  }
+   handleLoadMoreBtn = () => {
+    this.setState(({ page }) => ({
+      page: page + 1,
+      showBtn: false,
+      loading: true,
+    }));
+  };
 
   render() {
-    const {images, loading, showBtn} = this.state;
+    const {images, loading, showBtn, error} = this.state;
     
     return (
-      <AppWrap>
-        <Searchbar onSubmit={this.handleFormSubmit}/>
-        {loading &&  <Loader/>}
-        {/* {error && <h2>{error.message}</h2>} */}
-        {images.length > 0 && <ImageGallery images={images}/>}
-        {showBtn && <Button onClick={this.handleLoadMoreBtnClick}/>} 
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gridGap: 16,
+          paddingBottom: 24,
+        }}
+      >
+        <Searchbar onSubmit={this.handleFormSubmit} />
+        {images.length > 0 && <ImageGallery images={images} />}
+        {error && <p>{error.message}</p>}
+        {showBtn && <Button onLoadMoreButton={this.handleLoadMoreBtn} />}
+        {loading && <Loader />}
         <ToastContainer autoClose={3000} theme="dark"/>
-      </AppWrap>
+      </div>
     )
   }
 }
