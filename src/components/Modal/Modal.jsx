@@ -16,14 +16,18 @@ class Modal extends Component {
     }
 
     handleEscape = evt => {
+      const { onClose } = this.props;
+      
         if(evt.code === 'Escape') {
-            this.props.onClose();
+            onClose();
         }
     }
 
     handleBackdropClick = evt => {
+      const { onClose } = this.props;
+      
         if(evt.currentTarget === evt.target){
-            this.props.onClose();
+           onClose();
         }
     }
 
