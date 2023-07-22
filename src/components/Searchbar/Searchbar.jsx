@@ -15,7 +15,6 @@ class Searchbar extends Component {
 
     state= {
         imageName: '',
-        page: 1
     }
 
     handleNameChange = evt => {
@@ -27,13 +26,14 @@ class Searchbar extends Component {
     handleSubmit = evt => {
         evt.preventDefault();
         const {imageName} = this.state;
+        const { onSubmit } = this.props;
 
         if(!imageName.trim()) {
             toast.error('Enter name of the pictures.');
             return;
         }
 
-        this.props.onSubmit(imageName);
+        onSubmit(imageName);
         this.setState({imageName: ''});
     }
     
