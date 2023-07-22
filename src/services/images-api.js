@@ -12,11 +12,10 @@ export const fetchImages = async (imageName, page, perPage) => {
   });
     
     const resp = await fetch(`${BASE_URL}?${searchParams}`);
-    console.log(resp)
+   
     if (!resp.ok) {
         Promise.reject(new Error('Something is wrong. Please try again!'));
     }
     const message = resp.json();
-    console.log(message)
     return message;
 };
